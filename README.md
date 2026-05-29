@@ -9,6 +9,42 @@ Backend is **Firebase Authentication + Realtime Database + Storage**.
 
 ---
 
+## 0. Build the APK from your phone (no laptop / no Android Studio)
+
+This repo includes a GitHub Actions workflow at `.github/workflows/build-apk.yml`
+that builds the APK on GitHub's servers. Steps from your phone browser:
+
+1. **Open the repo on github.com** and sign in.
+2. Tap the **Actions** tab. (If it says "Workflows aren't being run on this
+   repository", tap **"I understand my workflows, go ahead and enable them"**.)
+3. In the left sidebar tap **"Build APK"**.
+4. Tap the **"Run workflow"** dropdown → **"Run workflow"** button.
+5. Wait ~5–8 minutes for the green checkmark.
+6. Tap the run name → scroll to the **"Artifacts"** section at the bottom →
+   tap **`infinity-debug-apk`** to download a ZIP containing `app-debug.apk`.
+7. Open the ZIP on your phone, extract the APK, and tap to install.
+   Allow "Install from unknown source" if Android asks.
+
+> **Heads-up:** before the APK will actually log in and load posts, you must
+> register the Android app `com.infinity.app` in the Firebase console and
+> upload the new `google-services.json` to `app/google-services.json` in this
+> repo (commit + push, then re-run the workflow). See section 5 below.
+
+### Want a stable download URL?
+Push a tag named like `v1.0.0` (or create a Release on github.com from your
+phone) — the workflow will also attach the APK to that **GitHub Release**, so
+you can share a link like
+`https://github.com/<you>/InfinityInstagram/releases/download/v1.0.0/app-debug.apk`.
+
+### Debug vs. release APK
+- The workflow builds **`app-debug.apk`** (auto-signed with the Android debug
+  keystore) — install this for testing.
+- It also tries to build **`app-release-unsigned.apk`** — for Play Store
+  publishing you'd sign it with your own keystore. Skip it if you only want
+  to install on your own phone.
+
+---
+
 ## 1. Project folder structure
 
 ```

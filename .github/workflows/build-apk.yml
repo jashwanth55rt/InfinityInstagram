@@ -1,0 +1,148 @@
+# ============================================================================
+# build-apk.yml — Build an Android APK in the cloud (no laptop needed)
+#
+# This workflow runs on GitHub's servers and produces an installable APK for
+# the "infinity" app. From your phone you can:
+#   1) Open this repo on github.com
+#   2) Tap the "Actions" tab
+#   3) Pick "Build APK" -> "Run workflow"
+#   4) When it finishes, download the APK from the "Artifacts" section,
+#      OR — when you push a git tag like v1.0.0 — grab it from "Releases".
+#
+# What it builds:
+#   - app-debug.apk    : signed with Android's default debug keystore.
+#                        Installable on any phone in seconds.
+#                        This is what you want for testing the app.
+#   - app-release-unsigned.apk
+#                      : an UNSIGNED release build. You'd sign it later
+#                        with your own keystore before publishing to the Play
+#                        Store. Optional — most users only need the debug APK.
+#
+# How to install the debug APK on your phone:
+#   1) Download the APK to your phone.
+#   2) Open the file -> "Allow install from this source" if prompted.
+#   3) Install.
+# ============================================================================
+
+name: Build APK
+
+# When does this workflow run?
+on:
+  # Manual trigger from the Actions tab on github.com (mobile-friendly).
+  workflow_dispatch:
+
+  # Auto-build whenever you push to main / a feature branch.
+  push:
+    branches:
+      - main
+      - 'feat/**'
+
+  # When you push a tag like "v1.0.0", also create a GitHub Release with
+  # the APK attached (so anyone with the link can download it).
+  #   git tag v1.0.0 && git push origin v1.0.0
+  # (You can do this from the GitHub web UI on mobile too: Releases ->
+  #  "Draft a new release" -> create a new tag.)
+  push_tags:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Assemble APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # ---- 1) Pull the source code ----
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---- 2) Install Java 17 ----
+      # Android Gradle Plugin 8.x requires JDK 17.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'   # Eclipse Adoptium build of OpenJDK
+          java-version: '17'
+
+      # ---- 3) Install Gradle 8.2 ----
+      # Gradle 8.2 matches what we declared in gradle/wrapper/gradle-wrapper.properties.
+      # Using setup-gradle skips the need to commit a gradle-wrapper.jar binary.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
+          # Cache Gradle's dependency downloads between runs (much faster CI).
+          cache-read-only: false
+
+      # ---- 4) Install the Android SDK + accept licenses ----
+      # The Android setup action installs platform-tools, build-tools,
+      # and platform jars matching our compileSdk = 34.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
+
+      # ---- 5) Generate the Gradle wrapper ----
+      # We didn't commit gradle-wrapper.jar (binary). Generate it now so
+      # subsequent steps can use ./gradlew like a normal Android project.
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.2
+
+      # ---- 6) Build the DEBUG APK ----
+      # This is the easiest APK to install on your phone. It is auto-signed
+      # by AGP using the Android debug keystore.
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      # ---- 7) Build the (unsigned) RELEASE APK ----
+      # Optional. You'd sign this with your own keystore before publishing
+      # to the Play Store. For sideloading on your own phone, prefer the
+      # debug APK above.
+      - name: Build release APK (unsigned)
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
+        # If this step ever fails because of your local proguard rules etc.,
+        # you can disable it without breaking the debug build:
+        continue-on-error: true
+
+      # ---- 8) Show what was produced (handy when debugging the workflow) ----
+      - name: List built APKs
+        run: |
+          echo "Debug APKs:"
+          find app/build/outputs/apk/debug -name "*.apk" -print || true
+          echo "Release APKs:"
+          find app/build/outputs/apk/release -name "*.apk" -print || true
+
+      # ---- 9) Upload APKs as workflow artifacts ----
+      # After the workflow finishes, you can download these from the run's
+      # "Summary" page on github.com (works on mobile).
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: infinity-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload release APK (unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: infinity-release-unsigned-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      # ---- 10) When a version tag is pushed, attach the APK to a Release ----
+      # This makes the APK downloadable from a stable URL like
+      #   https://github.com/<owner>/<repo>/releases/download/v1.0.0/app-debug.apk
+      # which is much easier to share than artifact links.
+      - name: Publish GitHub Release with APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
