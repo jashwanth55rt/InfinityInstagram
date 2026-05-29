@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">infinity</string>
+
+    <!-- Auth -->
+    <string name="login">Log in</string>
+    <string name="register">Sign up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="full_name">Full name</string>
+    <string name="dont_have_account">Don\'t have an account? Sign up</string>
+    <string name="already_have_account">Already have an account? Log in</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="create_account">Create your account</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_search">Search</string>
+    <string name="tab_add">New</string>
+    <string name="tab_notifications">Activity</string>
+    <string name="tab_profile">Profile</string>
+
+    <!-- Home / posts -->
+    <string name="stories">Stories</string>
+    <string name="your_story">Your story</string>
+    <string name="add_caption">Write a caption…</string>
+    <string name="post">Post</string>
+    <string name="upload_post">New post</string>
+    <string name="upload_story">New story</string>
+    <string name="pick_image">Pick image</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Edit profile</string>
+    <string name="follow">Follow</string>
+    <string name="following">Following</string>
+    <string name="followers">Followers</string>
+    <string name="posts">Posts</string>
+    <string name="bio">Bio</string>
+    <string name="logout">Log out</string>
+    <string name="save">Save</string>
+
+    <!-- Search -->
+    <string name="search_users">Search users</string>
+
+    <!-- Misc -->
+    <string name="loading">Loading…</string>
+    <string name="something_went_wrong">Something went wrong. Try again.</string>
+    <string name="no_posts_yet">No posts yet</string>
+    <string name="no_notifications">You\'re all caught up</string>
+</resources>

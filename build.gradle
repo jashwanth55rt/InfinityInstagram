@@ -1,0 +1,6 @@
+// Project-level build file.
+// Plugins are declared here with `apply false` and applied in the :app module.
+plugins {
+    id 'com.android.application' version '8.1.4' apply false
+    id 'com.google.gms.google-services' version '4.4.0' apply false
+}
