@@ -1,0 +1,22 @@
+// Top-level settings for the "infinity" Android project.
+// Uses the modern Gradle plugin management + centralized dependency repositories.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // JitPack is used by some community libraries (e.g. CircleImageView is on mavenCentral,
+        // but we keep JitPack available for convenience).
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = "infinity"
+include ':app'
